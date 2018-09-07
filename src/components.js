@@ -1,10 +1,14 @@
 import React from 'react'
-import styled from 'styled-components'
+import PropTypes from 'prop-types'
+import styled, { withTheme } from 'styled-components'
 import {
   fontSize,
   space,
   color
 } from 'styled-system'
+import Notes from './Notes'
+import Mono from './Mono'
+import Code from './Code'
 
 const css = key => props => props.theme[key]
 
@@ -16,57 +20,40 @@ const Heading = styled.h1([], {
   color,
   css('heading')
 )
+Heading.propTypes = {
+  ...fontSize.propTypes,
+  ...space.propTypes,
+  ...color.propTypes
+}
 Heading.defaultProps = {
   color: 'heading',
   mt: 3,
-  mb: 3,
+  mb: 3
 }
 
-const H2 = Heading.withComponent('h2')
-const H3 = Heading.withComponent('h3')
-const H4 = Heading.withComponent('h4')
-const H5 = Heading.withComponent('h5')
-const H6 = Heading.withComponent('h6')
+const h1 = styled(Heading.withComponent('h1'))([], css('h1'))
+h1.defaultProps = {
+  fontSize: 4
+}
 
-const h1 = props =>
-  <Heading
-    {...props}
-    fontSize={[ 3, 4, 5 ]}
-  />
+const h2 = styled(Heading.withComponent('h2'))([], css('h2'))
+h2.defaultProps = {
+  fontSize: 3
+}
 
-const h2 = props =>
-  <H2
-    {...props}
-    fontSize={[ 2, 3, 4 ]}
-  />
+const h3 = styled(Heading.withComponent('h3'))([], css('h3'))
+h3.defaultProps = {
+  fontSize: 2
+}
+const h4 = styled(h3.withComponent('h4'))([], css('h4'))
+const h5 = styled(h3.withComponent('h5'))([], css('h5'))
+const h6 = styled(h3.withComponent('h6'))([], css('h6'))
 
-const h3 = props =>
-  <H3
-    {...props}
-    fontSize={[ 2, 3 ]}
-  />
-
-const h4 = props =>
-  <H4
-    {...props}
-    fontSize={[ 2, 3 ]}
-  />
-
-const h5 = props =>
-  <H5
-    {...props}
-    fontSize={[ 2, 3 ]}
-  />
-
-const h6 = props =>
-  <H6
-    {...props}
-    fontSize={[ 2, 3 ]}
-  />
-
-const a = styled.a([], color, css('link'))
+const a = styled.a([], color, css('link'), css('a'))
+a.propTypes = {
+  ...color.propTypes,
+}
 a.defaultProps = {
-  target: '_blank',
   color: 'link'
 }
 
@@ -74,23 +61,38 @@ const p = styled.p([],
   fontSize,
   space,
   color,
-  css('paragraph')
+  css('paragraph'),
+  css('p'),
 )
+p.propTypes = {
+  ...fontSize.propTypes,
+  ...space.propTypes,
+  ...color.propTypes
+}
+p.defaultProps = {
+  fontSize: 2
+}
 
 const ul = styled.ul([], {
   textAlign: 'left'
 }, fontSize, css('ul'))
+ul.propTypes = {
+  ...fontSize.propTypes
+}
 ul.defaultProps = {
-  fontSize: [ 2, 3 ]
+  fontSize: 2
 }
 
 const ol = styled.ol([], {
   textAlign: 'left'
 }, fontSize, css('ol'))
-ol.defaultProps = {
-  fontSize: [ 2, 3 ]
+ol.propTypes = {
+  ...fontSize.propTypes
 }
-const li = styled.li([])
+ol.defaultProps = {
+  fontSize: 2
+}
+const li = styled.li([], css('li'))
 
 const blockquote = styled.blockquote([], {
   textAlign: 'left',
@@ -99,43 +101,101 @@ const blockquote = styled.blockquote([], {
   fontSize,
   space,
   color,
+  css('blockquote'),
   css('quote')
 )
+blockquote.propTypes = {
+  ...fontSize.propTypes,
+  ...space.propTypes,
+  ...color.propTypes
+}
 blockquote.defaultProps = {
-  fontSize: [ 2, 3, 4 ],
+  fontSize: 2,
   px: 0,
   mx: 0,
   color: 'quote'
 }
 
-const pre = styled.pre([], props => ({
-  fontFamily: props.theme.monospace
+const Pre = styled.pre([], props => ({
+  fontFamily: props.theme.monospace,
+  textAlign: 'left',
+  whiteSpace: 'pre-wrap'
 }),
   fontSize,
   space,
   color,
   css('pre')
 )
-pre.defaultProps = {
-  fontSize: [ 1, 2 ],
+Pre.propTypes = {
+  ...fontSize.propTypes,
+  ...space.propTypes,
+  ...color.propTypes
+}
+Pre.defaultProps = {
+  fontSize: 1,
   m: 0,
   p: 2,
   color: 'pre',
   bg: 'preBackground'
 }
 
-const code = styled.code([], props => ({
+const code = withTheme(props => {
+  const { theme } = props
+  switch (props.className) {
+    case 'language-notes':
+      return (
+        <Notes>
+          <Mono {...props} color='white' />
+        </Notes>
+      )
+    default:
+      if (theme.prism && theme.prism.style) {
+        return <Code {...props} />
+      }
+      return <Pre {...props} />
+  }
+})
+
+const inlineCode = styled.code([], props => ({
   fontFamily: props.theme.monospace
 }), fontSize, space, color, css('code'))
-code.defaultProps = {
+inlineCode.propTypes = {
+  ...fontSize.propTypes,
+  ...space.propTypes,
+  ...color.propTypes
+}
+inlineCode.defaultProps = {
   color: 'code',
   bg: 'codeBackground'
 }
 
 const img = styled.img([], {
   maxWidth: '100%',
-  height: 'auto'
-}, css('image'))
+  height: 'auto',
+  objectFit: 'cover',
+}, css('img'), css('image'))
+
+const TableRoot = styled.div([], {
+  overflowX: 'auto'
+})
+const Table = styled.table([], {
+  width: '100%',
+  borderCollapse: 'separate',
+  borderSpacing: 0,
+  '& td, & th': {
+    textAlign: 'left',
+    paddingRight: '.5em',
+    paddingTop: '.25em',
+    paddingBottom: '.25em',
+    borderBottom: '1px solid',
+    verticalAlign: 'top'
+  }
+}, css('table'))
+
+const table = props =>
+  <TableRoot>
+    <Table {...props} />
+  </TableRoot>
 
 export default {
   h1,
@@ -151,7 +211,8 @@ export default {
   ol,
   li,
   pre: props => props.children,
-  code: pre,
-  inlineCode: code,
-  img
+  code,
+  inlineCode,
+  img,
+  table
 }
